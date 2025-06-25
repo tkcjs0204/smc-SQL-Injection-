@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>📁 파일 업로드 취약점 시연 - Hacking Simulator</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Courier New', monospace;
+            background: linear-gradient(135deg, #1e3c72, #2a5298);
+            color: #fff;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 15px;
+        }
+
+        .header h1 {
+            color: #ff6b6b;
+            margin-bottom: 10px;
+        }
+
+        .warning {
+            background: rgba(255, 107, 107, 0.2);
+            border: 2px solid #ff6b6b;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+
+        .upload-section {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 30px;
+        }
+
+        .upload-section h3 {
+            color: #00ff88;
+            margin-bottom: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #00ff88;
+        }
+
+        input[type="file"] {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #00ff88;
+            border-radius: 8px;
+            background: rgba(0, 0, 0, 0.3);
+            color: #fff;
+            font-family: 'Courier New', monospace;
+        }
+
+        .btn {
+            background: linear-gradient(45deg, #ff6b6b, #ee5a52);
+            color: #fff;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+
+        .btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 15px rgba(255, 107, 107, 0.4);
+        }
+
+        .examples {
+            background: rgba(255, 193, 7, 0.2);
+            border: 2px solid #ffc107;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .examples h4 {
+            color: #ffc107;
+            margin-bottom: 15px;
+        }
+
+        .example-code {
+            background: rgba(0, 0, 0, 0.5);
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 10px;
+            font-family: 'Courier New', monospace;
+            border-left: 3px solid #ffc107;
+        }
+
+        .back-btn {
+            display: inline-block;
+            background: linear-gradient(45deg, #00ff88, #00cc6a);
+            color: #000;
+            padding: 10px 20px;
+            text-decoration: none;
+            border-radius: 25px;
+            margin-bottom: 20px;
+            font-weight: bold;
+        }
+
+        .back-btn:hover {
+            transform: scale(1.05);
+        }
+
+        .status {
+            background: rgba(0, 255, 136, 0.2);
+            border: 2px solid #00ff88;
+            border-radius: 10px;
+            padding: 15px;
+            margin-top: 20px;
+            display: none;
+        }
+
+        .status.success {
+            background: rgba(0, 255, 136, 0.2);
+            border-color: #00ff88;
+        }
+
+        .status.error {
+            background: rgba(255, 107, 107, 0.2);
+            border-color: #ff6b6b;
+        }
+
+        .file-info {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
+            padding: 15px;
+            margin-top: 15px;
+            border-left: 4px solid #00ff88;
+        }
+
+        .dangerous-files {
+            background: rgba(255, 0, 0, 0.2);
+            border: 2px solid #ff0000;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .dangerous-files h4 {
+            color: #ff0000;
+            margin-bottom: 15px;
+        }
+
+        .file-type {
+            display: inline-block;
+            background: rgba(255, 0, 0, 0.3);
+            padding: 5px 10px;
+            border-radius: 15px;
+            margin: 5px;
+            font-size: 0.9em;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="/" class="back-btn">← 메인으로 돌아가기</a>
+        
+        <div class="header">
+            <h1>📁 파일 업로드 취약점 시연</h1>
+            <p>악성 파일 업로드를 통한 공격 기법을 학습합니다</p>
+        </div>
+
+        <div class="warning">
+            <h3>⚠️ 파일 업로드 취약점 설명</h3>
+            <p>이 페이지는 의도적으로 파일 업로드 취약점을 포함하고 있습니다. 파일 확장자 검증이 없어 악성 파일이 업로드될 수 있습니다.</p>
+        </div>
+
+        <div class="dangerous-files">
+            <h4>🚨 위험한 파일 형식들</h4>
+            <p>다음 파일 형식들은 악성 코드를 포함할 수 있습니다:</p>
+            <div class="file-type">.php</div>
+            <div class="file-type">.jsp</div>
+            <div class="file-type">.asp</div>
+            <div class="file-type">.exe</div>
+            <div class="file-type">.bat</div>
+            <div class="file-type">.sh</div>
+            <div class="file-type">.py</div>
+            <div class="file-type">.js</div>
+        </div>
+
+        <div class="examples">
+            <h4>🎯 악성 파일 예시</h4>
+            <div class="example-code">
+                &lt;?php
+                system($_GET['cmd']);
+                ?&gt;
+            </div>
+            <p>위와 같은 PHP 파일이 업로드되면 웹쉘(Web Shell)이 생성되어 서버를 제어할 수 있습니다.</p>
+        </div>
+
+        <div class="upload-section">
+            <h3>📤 파일 업로드</h3>
+            <form id="uploadForm" enctype="multipart/form-data">
+                <div class="form-group">
+                    <label for="file">파일 선택:</label>
+                    <input type="file" id="file" name="file" required>
+                </div>
+                <button type="submit" class="btn">파일 업로드</button>
+            </form>
+            
+            <div id="status" class="status"></div>
+        </div>
+
+        <div class="examples">
+            <h4>🔍 파일 업로드 취약점 원리</h4>
+            <p>1. <strong>파일 확장자 검증 부족:</strong> 서버가 파일 확장자를 제대로 검증하지 않습니다.</p>
+            <p>2. <strong>실행 권한:</strong> 업로드된 파일이 웹 서버에서 실행될 수 있습니다.</p>
+            <p>3. <strong>경로 노출:</strong> 업로드된 파일의 경로가 예측 가능합니다.</p>
+            <p>4. <strong>웹쉘 생성:</strong> 악성 스크립트가 서버에서 실행되어 공격자가 서버를 제어할 수 있습니다.</p>
+        </div>
+
+        <div class="examples">
+            <h4>🛡️ 방어 방법</h4>
+            <div class="example-code">
+                // 허용된 파일 확장자만 업로드
+                const allowedExtensions = ['.jpg', '.png', '.gif', '.pdf'];
+                
+                // 파일 크기 제한
+                const maxFileSize = 5 * 1024 * 1024; // 5MB
+                
+                // 파일 내용 검증
+                const fileContent = await validateFileContent(file);
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 파일 업로드 처리
+        document.getElementById('uploadForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const fileInput = document.getElementById('file');
+            const file = fileInput.files[0];
+            
+            if (!file) {
+                showStatus('파일을 선택해주세요.', false);
+                return;
+            }
+            
+            // 파일 정보 표시
+            const fileInfo = document.createElement('div');
+            fileInfo.className = 'file-info';
+            fileInfo.innerHTML = `
+                <h4>📄 파일 정보</h4>
+                <div><strong>파일명:</strong> ${file.name}</div>
+                <div><strong>크기:</strong> ${(file.size / 1024).toFixed(2)} KB</div>
+                <div><strong>타입:</strong> ${file.type || '알 수 없음'}</div>
+                <div><strong>확장자:</strong> ${getFileExtension(file.name)}</div>
+            `;
+            
+            // 기존 파일 정보 제거
+            const existingInfo = document.querySelector('.file-info');
+            if (existingInfo) {
+                existingInfo.remove();
+            }
+            
+            document.querySelector('.upload-section').appendChild(fileInfo);
+            
+            // 위험한 파일 확장자 경고
+            const extension = getFileExtension(file.name).toLowerCase();
+            const dangerousExtensions = ['.php', '.jsp', '.asp', '.exe', '.bat', '.sh', '.py', '.js'];
+            
+            if (dangerousExtensions.includes(extension)) {
+                if (!confirm(`⚠️ 경고!\n\n파일 확장자 "${extension}"는 위험할 수 있습니다.\n\n이 파일을 업로드하시겠습니까?\n\n(교육 목적으로만 진행하세요)`)) {
+                    return;
+                }
+            }
+            
+            const formData = new FormData();
+            formData.append('file', file);
+            
+            try {
+                const response = await fetch('/upload', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const result = await response.json();
+                if (result.success) {
+                    showStatus(`파일이 성공적으로 업로드되었습니다!\n파일명: ${result.filename}`, true);
+                    
+                    // 위험한 파일 업로드 성공 시 추가 경고
+                    if (dangerousExtensions.includes(extension)) {
+                        setTimeout(() => {
+                            alert(`🚨 위험한 파일 업로드 성공!\n\n파일 "${file.name}"이 업로드되었습니다.\n\n실제 환경에서는 이 파일이 웹쉘로 사용되어 서버를 제어할 수 있습니다.\n\n이는 교육 목적의 시연입니다.`);
+                        }, 1000);
+                    }
+                } else {
+                    showStatus('파일 업로드 실패: ' + result.error, false);
+                }
+            } catch (error) {
+                showStatus('오류가 발생했습니다: ' + error.message, false);
+            }
+        });
+
+        // 파일 확장자 추출
+        function getFileExtension(filename) {
+            return filename.slice((filename.lastIndexOf('.') - 1 >>> 0) + 2);
+        }
+
+        // 상태 메시지 표시
+        function showStatus(message, isSuccess) {
+            const statusDiv = document.getElementById('status');
+            statusDiv.textContent = message;
+            statusDiv.className = `status ${isSuccess ? 'success' : 'error'}`;
+            statusDiv.style.display = 'block';
+            
+            setTimeout(() => {
+                statusDiv.style.display = 'none';
+            }, 5000);
+        }
+
+        // 파일 선택 시 미리보기
+        document.getElementById('file').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const extension = getFileExtension(file.name).toLowerCase();
+                const dangerousExtensions = ['.php', '.jsp', '.asp', '.exe', '.bat', '.sh', '.py', '.js'];
+                
+                if (dangerousExtensions.includes(extension)) {
+                    showStatus(`⚠️ 위험한 파일 형식 감지: ${extension}`, false);
+                }
+            }
+        });
+
+        // 페이지 로드 시 경고
+        window.addEventListener('load', function() {
+            setTimeout(() => {
+                alert('📁 파일 업로드 취약점 시연 페이지에 오신 것을 환영합니다!\n\n이 페이지는 교육 목적으로 파일 업로드 취약점을 시연합니다.\n\n주의: 실제 시스템에서는 이러한 취약점이 보안 위험을 초래할 수 있습니다.');
+            }, 1000);
+        });
+    </script>
+</body>
+</html> 

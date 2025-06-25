@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🔬 SQL Injection 실습 환경</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #ff6b6b, #ee5a24);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .nav-tabs {
+            display: flex;
+            background: #f8f9fa;
+            border-bottom: 1px solid #dee2e6;
+        }
+
+        .nav-tab {
+            flex: 1;
+            padding: 15px 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: none;
+            background: none;
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        .nav-tab:hover {
+            background: #e9ecef;
+        }
+
+        .nav-tab.active {
+            background: #007bff;
+            color: white;
+        }
+
+        .tab-content {
+            display: none;
+            padding: 30px;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .scenario-info {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+        }
+
+        .scenario-info h3 {
+            color: #333;
+            margin-bottom: 15px;
+        }
+
+        .scenario-info p {
+            color: #666;
+            line-height: 1.6;
+            margin-bottom: 15px;
+        }
+
+        .hint-box {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+
+        .hint-box h4 {
+            color: #856404;
+            margin-bottom: 10px;
+        }
+
+        .input-section {
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .input-group input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 6px;
+            font-size: 16px;
+            transition: border-color 0.3s ease;
+        }
+
+        .input-group input:focus {
+            outline: none;
+            border-color: #007bff;
+        }
+
+        .btn {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background 0.3s ease;
+        }
+
+        .btn:hover {
+            background: #0056b3;
+        }
+
+        .btn-success {
+            background: #28a745;
+        }
+
+        .btn-success:hover {
+            background: #1e7e34;
+        }
+
+        .results {
+            background: white;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+
+        .results h3 {
+            color: #333;
+            margin-bottom: 15px;
+        }
+
+        .result-item {
+            background: #f8f9fa;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 5px;
+            border-left: 4px solid #007bff;
+        }
+
+        .sql-display {
+            background: #2d3748;
+            color: #e2e8f0;
+            padding: 15px;
+            border-radius: 6px;
+            font-family: 'Courier New', monospace;
+            margin: 15px 0;
+            overflow-x: auto;
+        }
+
+        .payload-examples {
+            background: #e9ecef;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+        }
+
+        .payload-examples h4 {
+            margin-bottom: 10px;
+            color: #495057;
+        }
+
+        .payload-example {
+            background: white;
+            padding: 8px 12px;
+            margin: 5px 0;
+            border-radius: 4px;
+            font-family: monospace;
+            cursor: pointer;
+            border: 1px solid #dee2e6;
+        }
+
+        .payload-example:hover {
+            background: #f8f9fa;
+        }
+
+        .back-btn {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            text-decoration: none;
+            font-size: 14px;
+        }
+
+        .back-btn:hover {
+            background: rgba(0, 0, 0, 0.9);
+        }
+    </style>
+</head>
+<body>
+    <a href="/" class="back-btn">← 메인으로</a>
+
+    <div class="container">
+        <div class="header">
+            <h1>🔬 SQL Injection 실습 환경</h1>
+            <p>다양한 시나리오에서 SQL Injection을 연습해보세요</p>
+        </div>
+
+        <div class="nav-tabs">
+            <button class="nav-tab active" onclick="showTab('users')">👥 사용자 검색</button>
+            <button class="nav-tab" onclick="showTab('products')">🛍️ 상품 검색</button>
+            <button class="nav-tab" onclick="showTab('orders')">📦 주문 검색</button>
+        </div>
+
+        <!-- 사용자 검색 탭 -->
+        <div id="users" class="tab-content active">
+            <div class="scenario-info">
+                <h3>👥 사용자 검색 시나리오</h3>
+                <p>사용자 관리 시스템에서 SQL Injection 취약점을 찾아보세요. 사용자명이나 이메일로 검색할 때 발생할 수 있는 취약점을 테스트해보세요.</p>
+                <div class="hint-box">
+                    <h4>💡 힌트</h4>
+                    <p>사용자 정보를 모두 추출하거나, 특정 조건의 사용자만 찾아보세요. UNION 공격을 사용하여 다른 테이블의 정보도 가져올 수 있습니다.</p>
+                </div>
+            </div>
+
+            <div class="input-section">
+                <div class="input-group">
+                    <label for="userSearch">사용자 검색:</label>
+                    <input type="text" id="userSearch" placeholder="사용자명 또는 이메일을 입력하세요">
+                </div>
+                <button class="btn" onclick="searchUsers()">검색</button>
+            </div>
+
+            <div class="payload-examples">
+                <h4>🎯 페이로드 예시 (클릭하여 복사)</h4>
+                <div class="payload-example" onclick="copyPayload(this)">' OR '1'='1</div>
+                <div class="payload-example" onclick="copyPayload(this)">' UNION SELECT username, password, email FROM users --</div>
+                <div class="payload-example" onclick="copyPayload(this)">' UNION SELECT * FROM users WHERE role='admin' --</div>
+                <div class="payload-example" onclick="copyPayload(this)">' UNION SELECT name, sql FROM sqlite_master WHERE type='table' --</div>
+            </div>
+
+            <div id="userResults" class="results" style="display: none;">
+                <h3>📊 검색 결과</h3>
+                <div id="userResultContent"></div>
+            </div>
+        </div>
+
+        <!-- 상품 검색 탭 -->
+        <div id="products" class="tab-content">
+            <div class="scenario-info">
+                <h3>🛍️ 상품 검색 시나리오</h3>
+                <p>온라인 쇼핑몰의 상품 검색 기능에서 SQL Injection 취약점을 찾아보세요. 상품명, 설명, 카테고리로 검색할 때 발생할 수 있는 취약점을 테스트해보세요.</p>
+                <div class="hint-box">
+                    <h4>💡 힌트</h4>
+                    <p>상품 정보를 모두 추출하거나, 특정 가격대의 상품만 찾아보세요. UNION 공격을 사용하여 다른 테이블의 정보도 가져올 수 있습니다.</p>
+                </div>
+            </div>
+
+            <div class="input-section">
+                <div class="input-group">
+                    <label for="productSearch">상품 검색:</label>
+                    <input type="text" id="productSearch" placeholder="상품명, 설명 또는 카테고리를 입력하세요">
+                </div>
+                <button class="btn" onclick="searchProducts()">검색</button>
+            </div>
+
+            <div class="payload-examples">
+                <h4>🎯 페이로드 예시 (클릭하여 복사)</h4>
+                <div class="payload-example" onclick="copyPayload(this)">' OR '1'='1</div>
+                <div class="payload-example" onclick="copyPayload(this)">' UNION SELECT name, price, description FROM products --</div>
+                <div class="payload-example" onclick="copyPayload(this)">' UNION SELECT * FROM products WHERE price > 500 --</div>
+                <div class="payload-example" onclick="copyPayload(this)">' UNION SELECT username, password, email FROM users --</div>
+            </div>
+
+            <div id="productResults" class="results" style="display: none;">
+                <h3>📊 검색 결과</h3>
+                <div id="productResultContent"></div>
+            </div>
+        </div>
+
+        <!-- 주문 검색 탭 -->
+        <div id="orders" class="tab-content">
+            <div class="scenario-info">
+                <h3>📦 주문 검색 시나리오</h3>
+                <p>주문 관리 시스템에서 SQL Injection 취약점을 찾아보세요. 사용자명이나 상품명으로 주문을 검색할 때 발생할 수 있는 취약점을 테스트해보세요.</p>
+                <div class="hint-box">
+                    <h4>💡 힌트</h4>
+                    <p>주문 정보를 모두 추출하거나, 특정 사용자의 주문만 찾아보세요. JOIN된 테이블의 정보를 활용하여 더 많은 데이터를 가져올 수 있습니다.</p>
+                </div>
+            </div>
+
+            <div class="input-section">
+                <div class="input-group">
+                    <label for="orderSearch">주문 검색:</label>
+                    <input type="text" id="orderSearch" placeholder="사용자명 또는 상품명을 입력하세요">
+                </div>
+                <button class="btn" onclick="searchOrders()">검색</button>
+            </div>
+
+            <div class="payload-examples">
+                <h4>🎯 페이로드 예시 (클릭하여 복사)</h4>
+                <div class="payload-example" onclick="copyPayload(this)">' OR '1'='1</div>
+                <div class="payload-example" onclick="copyPayload(this)">' UNION SELECT o.id, u.username, p.name FROM orders o JOIN users u ON o.user_id = u.id JOIN products p ON o.product_id = p.id --</div>
+                <div class="payload-example" onclick="copyPayload(this)">' UNION SELECT username, password, email FROM users --</div>
+                <div class="payload-example" onclick="copyPayload(this)">' UNION SELECT name, price, description FROM products --</div>
+            </div>
+
+            <div id="orderResults" class="results" style="display: none;">
+                <h3>📊 검색 결과</h3>
+                <div id="orderResultContent"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function showTab(tabName) {
+            // 모든 탭 숨기기
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // 모든 탭 버튼 비활성화
+            document.querySelectorAll('.nav-tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // 선택된 탭 보이기
+            document.getElementById(tabName).classList.add('active');
+            
+            // 선택된 탭 버튼 활성화
+            event.target.classList.add('active');
+        }
+
+        function searchUsers() {
+            const query = document.getElementById('userSearch').value;
+            if (!query.trim()) {
+                alert('검색어를 입력해주세요.');
+                return;
+            }
+
+            fetch(`/practice/search-users?q=${encodeURIComponent(query)}`)
+            .then(response => response.json())
+            .then(data => {
+                displayResults('userResults', 'userResultContent', data, query);
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('오류가 발생했습니다.');
+            });
+        }
+
+        function searchProducts() {
+            const query = document.getElementById('productSearch').value;
+            if (!query.trim()) {
+                alert('검색어를 입력해주세요.');
+                return;
+            }
+
+            fetch(`/practice/search-products?q=${encodeURIComponent(query)}`)
+            .then(response => response.json())
+            .then(data => {
+                displayResults('productResults', 'productResultContent', data, query);
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('오류가 발생했습니다.');
+            });
+        }
+
+        function searchOrders() {
+            const query = document.getElementById('orderSearch').value;
+            if (!query.trim()) {
+                alert('검색어를 입력해주세요.');
+                return;
+            }
+
+            fetch(`/practice/search-orders?q=${encodeURIComponent(query)}`)
+            .then(response => response.json())
+            .then(data => {
+                displayResults('orderResults', 'orderResultContent', data, query);
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('오류가 발생했습니다.');
+            });
+        }
+
+        function displayResults(resultId, contentId, data, query) {
+            const resultDiv = document.getElementById(resultId);
+            const contentDiv = document.getElementById(contentId);
+            
+            let html = `<div class="sql-display">실행된 SQL: ${data.sql}</div>`;
+            
+            if (data.success && data.results && data.results.length > 0) {
+                html += '<div class="result-item">';
+                html += `<strong>검색 결과 (${data.results.length}개):</strong><br><br>`;
+                
+                data.results.forEach((result, index) => {
+                    html += `<div style="margin-bottom: 15px; padding: 10px; background: white; border-radius: 5px;">`;
+                    html += `<strong>결과 ${index + 1}:</strong><br>`;
+                    Object.keys(result).forEach(key => {
+                        html += `<strong>${key}:</strong> ${result[key]}<br>`;
+                    });
+                    html += '</div>';
+                });
+                
+                html += '</div>';
+            } else {
+                html += '<div class="result-item">검색 결과가 없습니다.</div>';
+            }
+            
+            contentDiv.innerHTML = html;
+            resultDiv.style.display = 'block';
+        }
+
+        function copyPayload(element) {
+            const text = element.textContent;
+            navigator.clipboard.writeText(text).then(() => {
+                element.style.background = '#28a745';
+                element.style.color = 'white';
+                setTimeout(() => {
+                    element.style.background = 'white';
+                    element.style.color = 'black';
+                }, 500);
+            });
+        }
+
+        // Enter 키 이벤트
+        document.getElementById('userSearch').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                searchUsers();
+            }
+        });
+
+        document.getElementById('productSearch').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                searchProducts();
+            }
+        });
+
+        document.getElementById('orderSearch').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                searchOrders();
+            }
+        });
+    </script>
+</body>
+</html> 

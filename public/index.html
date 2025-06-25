@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>SQL Injection Lab</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@3.4.1/dist/css/bootstrap.min.css">
+    <style>
+        body {
+            background: #f7f9fb;
+            font-family: 'Segoe UI', 'Malgun Gothic', Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+        .navbar {
+            background: #222;
+            border: none;
+            border-radius: 0;
+            margin-bottom: 0;
+        }
+        .navbar-brand {
+            color: #fff !important;
+            font-weight: bold;
+            font-size: 1.5em;
+            letter-spacing: 1px;
+        }
+        .navbar-nav > li > a {
+            color: #fff !important;
+            font-size: 1.1em;
+        }
+        .navbar-nav > li > a:hover {
+            color: #ffd700 !important;
+        }
+        .main-section {
+            max-width: 900px;
+            margin: 50px auto 0 auto;
+            padding: 30px 20px 40px 20px;
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 4px 24px #0002;
+        }
+        .main-section h1 {
+            text-align: center;
+            font-weight: 700;
+            margin-bottom: 30px;
+            color: #222;
+        }
+        .wargame-list {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 30px;
+        }
+        .wargame-card {
+            background: #f8fafc;
+            border-radius: 10px;
+            box-shadow: 0 2px 8px #0001;
+            padding: 28px 24px 20px 24px;
+            width: 270px;
+            min-height: 220px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            transition: box-shadow 0.2s;
+            position: relative;
+        }
+        .wargame-card:hover {
+            box-shadow: 0 6px 24px #0002;
+        }
+        .wargame-card h3 {
+            margin-top: 0;
+            font-size: 1.3em;
+            color: #007bff;
+            font-weight: 600;
+        }
+        .wargame-card p {
+            color: #444;
+            font-size: 1em;
+            margin-bottom: 18px;
+            text-align: center;
+        }
+        .wargame-card button {
+            background: #007bff;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            padding: 10px 28px;
+            font-size: 1.1em;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .wargame-card button:hover {
+            background: #0056b3;
+        }
+        .clear-badge {
+            position: absolute;
+            top: 18px;
+            right: 18px;
+            background: #00c853;
+            color: #fff;
+            font-size: 0.95em;
+            font-weight: bold;
+            padding: 4px 14px;
+            border-radius: 16px;
+            box-shadow: 0 2px 8px #0002;
+            z-index: 2;
+            letter-spacing: 1px;
+        }
+        @media (max-width: 800px) {
+            .main-section { padding: 10px 2vw; }
+            .wargame-list { flex-direction: column; align-items: center; gap: 18px; }
+            .wargame-card { width: 95vw; min-width: 0; }
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-default">
+        <div class="container-fluid">
+            <div class="navbar-header">
+                <a class="navbar-brand" href="/">SQL Injection Lab</a>
+            </div>
+            <ul class="nav navbar-nav navbar-right" id="nav-auth">
+                <li><a href="login.html">로그인</a></li>
+                <li><a href="register.html">회원가입</a></li>
+                <li style="display:none;"><a href="user.html" id="userPageBtn">내 정보</a></li>
+            </ul>
+        </div>
+    </nav>
+    <div class="main-section">
+        <h1>SQL Injection Wargame</h1>
+        <div class="wargame-list">
+            <div class="wargame-card">
+                <h3>단계별 학습</h3>
+                <p>기본 인증 우회부터 데이터베이스 정보 수집까지 5단계로 구성된 체계적인 SQL Injection 학습 과정입니다.</p>
+                <button onclick="location.href='sql-injection-levels'">시작하기</button>
+            </div>
+            <div class="wargame-card">
+                <h3>실습 환경</h3>
+                <p>다양한 시나리오에서 SQL Injection을 연습할 수 있는 실습 환경입니다. 사용자, 상품, 주문 데이터를 대상으로 실습하세요.</p>
+                <button onclick="location.href='sql-practice'">실습하기</button>
+            </div>
+            <div class="wargame-card">
+                <h3>Level 1</h3>
+                <p>기본적인 SQL Injection 우회 기법을 연습할 수 있는 로그인 문제입니다.<br>admin 계정의 FLAG를 노려보세요.</p>
+                <button onclick="location.href='wargame-level1.html'">도전하기</button>
+            </div>
+            <div class="wargame-card">
+                <h3>Level 2</h3>
+                <p>블라인드 SQL Injection(참/거짓만 반환) 환경에서<br>admin FLAG를 추출하는 실전 문제입니다.</p>
+                <button onclick="location.href='wargame-level2.html'">도전하기</button>
+            </div>
+            <div class="wargame-card">
+                <h3>Level 3</h3>
+                <p>WAF(웹 방화벽) 필터링을 우회하여<br>admin FLAG를 얻는 고급 SQL Injection 문제입니다.</p>
+                <button onclick="location.href='wargame-level3.html'">도전하기</button>
+            </div>
+            <div class="wargame-card">
+                <h3>Level 4</h3>
+                <p>블라인드 SQL Injection을 활용하여<br>admin FLAG를 추출하는 최종 문제입니다.</p>
+                <button onclick="location.href='wargame-level4.html'">도전하기</button>
+            </div>
+        </div>
+    </div>
+    <script>
+    // 로그인 상태에 따라 내 정보 버튼 표시
+    fetch('/api/me').then(r=>r.json()).then(data=>{
+        if(data.success) {
+            document.querySelector('#userPageBtn').parentElement.style.display = '';
+            document.querySelector('li > a[href="login.html"]').parentElement.style.display = 'none';
+            document.querySelector('li > a[href="register.html"]').parentElement.style.display = 'none';
+            // 워게임 클리어 표시
+            fetch('/api/solved').then(r=>r.json()).then(list=>{
+                const cleared = new Set(list.map(row=>row.level));
+                [1,2,3,4].forEach(level=>{
+                    if(cleared.has(level)) {
+                        const card = document.querySelector('.wargame-card:nth-of-type('+(level+2)+')');
+                        if(card && !card.querySelector('.clear-badge')) {
+                            const badge = document.createElement('div');
+                            badge.className = 'clear-badge';
+                            badge.innerText = '클리어!';
+                            card.appendChild(badge);
+                        }
+                    }
+                });
+            });
+        }
+    });
+    </script>
+</body>
+</html> 

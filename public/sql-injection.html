@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>💉 SQL Injection 취약점 시연 - Hacking Simulator</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Courier New', monospace;
+            background: linear-gradient(135deg, #1e3c72, #2a5298);
+            color: #fff;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 15px;
+        }
+
+        .header h1 {
+            color: #ff6b6b;
+            margin-bottom: 10px;
+        }
+
+        .warning {
+            background: rgba(255, 107, 107, 0.2);
+            border: 2px solid #ff6b6b;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+
+        .search-section {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 30px;
+        }
+
+        .search-section h3 {
+            color: #00ff88;
+            margin-bottom: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #00ff88;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #00ff88;
+            border-radius: 8px;
+            background: rgba(0, 0, 0, 0.3);
+            color: #fff;
+            font-family: 'Courier New', monospace;
+        }
+
+        .btn {
+            background: linear-gradient(45deg, #ff6b6b, #ee5a52);
+            color: #fff;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+
+        .btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 15px rgba(255, 107, 107, 0.4);
+        }
+
+        .results-section {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 30px;
+        }
+
+        .result-item {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 15px;
+            border-left: 4px solid #00ff88;
+        }
+
+        .result-item h4 {
+            color: #00ff88;
+            margin-bottom: 10px;
+        }
+
+        .result-meta {
+            font-size: 0.9em;
+            color: #ccc;
+            margin-top: 10px;
+        }
+
+        .examples {
+            background: rgba(255, 193, 7, 0.2);
+            border: 2px solid #ffc107;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .examples h4 {
+            color: #ffc107;
+            margin-bottom: 15px;
+        }
+
+        .example-code {
+            background: rgba(0, 0, 0, 0.5);
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 10px;
+            font-family: 'Courier New', monospace;
+            border-left: 3px solid #ffc107;
+            cursor: pointer;
+        }
+
+        .example-code:hover {
+            background: rgba(255, 193, 7, 0.1);
+        }
+
+        .back-btn {
+            display: inline-block;
+            background: linear-gradient(45deg, #00ff88, #00cc6a);
+            color: #000;
+            padding: 10px 20px;
+            text-decoration: none;
+            border-radius: 25px;
+            margin-bottom: 20px;
+            font-weight: bold;
+        }
+
+        .back-btn:hover {
+            transform: scale(1.05);
+        }
+
+        .sql-display {
+            background: rgba(0, 0, 0, 0.5);
+            border: 2px solid #ff6b6b;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 15px 0;
+            font-family: 'Courier New', monospace;
+            color: #ff6b6b;
+        }
+
+        .no-results {
+            text-align: center;
+            padding: 40px;
+            color: #ccc;
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="/" class="back-btn">← 메인으로 돌아가기</a>
+        
+        <div class="header">
+            <h1>💉 SQL Injection 취약점 시연</h1>
+            <p>검색 기능을 통해 데이터베이스에서 정보를 추출해보세요</p>
+        </div>
+
+        <div class="warning">
+            <h3>⚠️ SQL Injection 취약점 설명</h3>
+            <p>이 페이지는 의도적으로 SQL Injection 취약점을 포함하고 있습니다. 사용자 입력이 SQL 쿼리에 직접 삽입됩니다.</p>
+        </div>
+
+        <div class="examples">
+            <h4>🎯 시연용 SQL Injection 페이로드 예시</h4>
+            <div class="example-code" onclick="setSearchValue(this.textContent)">
+                ' OR '1'='1
+            </div>
+            <div class="example-code" onclick="setSearchValue(this.textContent)">
+                ' UNION SELECT * FROM users --
+            </div>
+            <div class="example-code" onclick="setSearchValue(this.textContent)">
+                ' OR username LIKE '%admin%' --
+            </div>
+            <div class="example-code" onclick="setSearchValue(this.textContent)">
+                '; DROP TABLE users; --
+            </div>
+            <div class="example-code" onclick="setSearchValue(this.textContent)">
+                ' UNION SELECT id, username, password, email FROM users --
+            </div>
+        </div>
+
+        <div class="search-section">
+            <h3>🔍 사용자 검색</h3>
+            <form id="searchForm">
+                <div class="form-group">
+                    <label for="searchQuery">검색어:</label>
+                    <input type="text" id="searchQuery" name="searchQuery" placeholder="사용자명이나 이메일을 검색하세요" required>
+                </div>
+                <button type="submit" class="btn">검색</button>
+            </form>
+            
+            <div id="sqlDisplay" class="sql-display" style="display: none;">
+                <strong>실행된 SQL 쿼리:</strong><br>
+                <span id="sqlQuery"></span>
+            </div>
+        </div>
+
+        <div class="results-section">
+            <h3>📋 검색 결과</h3>
+            <div id="searchResults">
+                <div class="no-results">
+                    검색어를 입력하고 검색 버튼을 클릭하세요.
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 검색 폼 제출
+        document.getElementById('searchForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const query = document.getElementById('searchQuery').value;
+            
+            try {
+                const response = await fetch(`/search?q=${encodeURIComponent(query)}`);
+                const result = await response.json();
+                
+                // SQL 쿼리 표시 (취약점 시연용)
+                const sqlDisplay = document.getElementById('sqlDisplay');
+                const sqlQuery = document.getElementById('sqlQuery');
+                sqlDisplay.style.display = 'block';
+                sqlQuery.textContent = `SELECT * FROM users WHERE username LIKE '%${query}%' OR email LIKE '%${query}%'`;
+                
+                displayResults(result);
+            } catch (error) {
+                alert('검색 중 오류가 발생했습니다: ' + error.message);
+            }
+        });
+
+        // 결과 표시
+        function displayResults(result) {
+            const resultsDiv = document.getElementById('searchResults');
+            
+            if (result.success) {
+                if (result.results && result.results.length > 0) {
+                    resultsDiv.innerHTML = '';
+                    result.results.forEach(user => {
+                        const userDiv = document.createElement('div');
+                        userDiv.className = 'result-item';
+                        userDiv.innerHTML = `
+                            <h4>👤 사용자 정보</h4>
+                            <div><strong>ID:</strong> ${user.id}</div>
+                            <div><strong>사용자명:</strong> ${user.username}</div>
+                            <div><strong>이메일:</strong> ${user.email}</div>
+                            <div><strong>비밀번호 해시:</strong> ${user.password}</div>
+                            <div class="result-meta">데이터베이스에서 추출된 정보</div>
+                        `;
+                        resultsDiv.appendChild(userDiv);
+                    });
+                } else {
+                    resultsDiv.innerHTML = '<div class="no-results">검색 결과가 없습니다.</div>';
+                }
+            } else {
+                resultsDiv.innerHTML = `<div class="no-results">오류: ${result.error}</div>`;
+            }
+        }
+
+        // 예시 코드 클릭 시 검색창에 입력
+        function setSearchValue(value) {
+            document.getElementById('searchQuery').value = value;
+        }
+
+        // 키보드 단축키
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' && document.activeElement.id === 'searchQuery') {
+                document.getElementById('searchForm').dispatchEvent(new Event('submit'));
+            }
+        });
+    </script>
+</body>
+</html> 

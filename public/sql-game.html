@@ -1,0 +1,600 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🎮 SQL Injection 게임</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #ff6b6b, #ee5a24);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .game-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            padding: 20px;
+            background: #f8f9fa;
+        }
+
+        .stat-item {
+            background: white;
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .stat-number {
+            font-size: 2em;
+            font-weight: bold;
+            color: #007bff;
+        }
+
+        .stat-label {
+            color: #666;
+            font-size: 0.9em;
+        }
+
+        .game-content {
+            padding: 30px;
+        }
+
+        .mission-card {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 30px;
+            border-left: 5px solid #007bff;
+        }
+
+        .mission-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .mission-title {
+            font-size: 1.5em;
+            color: #333;
+            font-weight: bold;
+        }
+
+        .mission-score {
+            background: #28a745;
+            color: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-weight: bold;
+        }
+
+        .mission-description {
+            color: #666;
+            line-height: 1.6;
+            margin-bottom: 20px;
+        }
+
+        .hint-box {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+
+        .hint-box h4 {
+            color: #856404;
+            margin-bottom: 10px;
+        }
+
+        .input-section {
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .input-group input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 6px;
+            font-size: 16px;
+            transition: border-color 0.3s ease;
+        }
+
+        .input-group input:focus {
+            outline: none;
+            border-color: #007bff;
+        }
+
+        .btn {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background 0.3s ease;
+        }
+
+        .btn:hover {
+            background: #0056b3;
+        }
+
+        .btn-success {
+            background: #28a745;
+        }
+
+        .btn-success:hover {
+            background: #1e7e34;
+        }
+
+        .results {
+            background: white;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+
+        .results h3 {
+            color: #333;
+            margin-bottom: 15px;
+        }
+
+        .result-item {
+            background: #f8f9fa;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 5px;
+            border-left: 4px solid #007bff;
+        }
+
+        .sql-display {
+            background: #2d3748;
+            color: #e2e8f0;
+            padding: 15px;
+            border-radius: 6px;
+            font-family: 'Courier New', monospace;
+            margin: 15px 0;
+            overflow-x: auto;
+        }
+
+        .payload-examples {
+            background: #e9ecef;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+        }
+
+        .payload-examples h4 {
+            margin-bottom: 10px;
+            color: #495057;
+        }
+
+        .payload-example {
+            background: white;
+            padding: 8px 12px;
+            margin: 5px 0;
+            border-radius: 4px;
+            font-family: monospace;
+            cursor: pointer;
+            border: 1px solid #dee2e6;
+        }
+
+        .payload-example:hover {
+            background: #f8f9fa;
+        }
+
+        .back-btn {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            text-decoration: none;
+            font-size: 14px;
+        }
+
+        .back-btn:hover {
+            background: rgba(0, 0, 0, 0.9);
+        }
+
+        .success-animation {
+            animation: successPulse 0.5s ease-in-out;
+        }
+
+        @keyframes successPulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+    </style>
+</head>
+<body>
+    <a href="/" class="back-btn">← 메인으로</a>
+
+    <div class="container">
+        <div class="header">
+            <h1>🎮 SQL Injection 게임</h1>
+            <p>게임처럼 재미있게 SQL Injection을 학습하세요!</p>
+        </div>
+
+        <div class="game-stats">
+            <div class="stat-item">
+                <div class="stat-number" id="currentLevel">1</div>
+                <div class="stat-label">현재 레벨</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number" id="totalScore">0</div>
+                <div class="stat-label">총 점수</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number" id="missionsCompleted">0</div>
+                <div class="stat-label">완료한 미션</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number" id="accuracy">0%</div>
+                <div class="stat-label">정확도</div>
+            </div>
+        </div>
+
+        <div class="game-content">
+            <div class="mission-card">
+                <div class="mission-header">
+                    <div class="mission-title">미션 1: 관리자 계정 탈취</div>
+                    <div class="mission-score">100점</div>
+                </div>
+                <div class="mission-description">
+                    로그인 시스템에서 SQL Injection을 사용하여 관리자 계정으로 로그인하세요. 
+                    사용자명과 비밀번호 필드에 적절한 페이로드를 입력해보세요.
+                </div>
+                
+                <div class="hint-box">
+                    <h4>💡 힌트</h4>
+                    <p>사용자명 필드에 <code>' OR '1'='1</code> 또는 <code>' OR 1=1 --</code>를 입력해보세요. 
+                    이는 WHERE 절을 항상 참으로 만들어 모든 사용자를 반환하게 합니다.</p>
+                </div>
+
+                <div class="input-section">
+                    <div class="input-group">
+                        <label for="gameUsername">사용자명:</label>
+                        <input type="text" id="gameUsername" placeholder="사용자명을 입력하세요">
+                    </div>
+                    <div class="input-group">
+                        <label for="gamePassword">비밀번호:</label>
+                        <input type="text" id="gamePassword" placeholder="비밀번호를 입력하세요">
+                    </div>
+                    <button class="btn" onclick="attemptGameLogin()">로그인 시도</button>
+                </div>
+
+                <div class="payload-examples">
+                    <h4>🎯 페이로드 예시 (클릭하여 복사)</h4>
+                    <div class="payload-example" onclick="copyPayload(this)">' OR '1'='1</div>
+                    <div class="payload-example" onclick="copyPayload(this)">' OR 1=1 --</div>
+                    <div class="payload-example" onclick="copyPayload(this)">admin' --</div>
+                    <div class="payload-example" onclick="copyPayload(this)">' UNION SELECT * FROM users --</div>
+                </div>
+
+                <div id="gameResults" class="results" style="display: none;">
+                    <h3>📊 결과</h3>
+                    <div id="gameResultContent"></div>
+                </div>
+            </div>
+
+            <div class="mission-card" id="mission2" style="display: none;">
+                <div class="mission-header">
+                    <div class="mission-title">미션 2: 데이터베이스 정보 수집</div>
+                    <div class="mission-score">150점</div>
+                </div>
+                <div class="mission-description">
+                    검색 기능을 통해 데이터베이스의 메타데이터를 수집하세요. 
+                    시스템 테이블을 조회하여 데이터베이스 구조를 파악해보세요.
+                </div>
+                
+                <div class="hint-box">
+                    <h4>💡 힌트</h4>
+                    <p>검색어에 <code>' UNION SELECT name, sql FROM sqlite_master WHERE type='table' --</code>를 입력해보세요. 
+                    sqlite_master 테이블은 데이터베이스의 스키마 정보를 담고 있습니다.</p>
+                </div>
+
+                <div class="input-section">
+                    <div class="input-group">
+                        <label for="gameSearch">검색어:</label>
+                        <input type="text" id="gameSearch" placeholder="검색어를 입력하세요">
+                    </div>
+                    <button class="btn" onclick="attemptGameSearch()">검색</button>
+                </div>
+
+                <div class="payload-examples">
+                    <h4>🎯 페이로드 예시 (클릭하여 복사)</h4>
+                    <div class="payload-example" onclick="copyPayload(this)">' UNION SELECT name, sql FROM sqlite_master WHERE type='table' --</div>
+                    <div class="payload-example" onclick="copyPayload(this)">' UNION SELECT * FROM sqlite_master --</div>
+                    <div class="payload-example" onclick="copyPayload(this)">' OR 1=1 UNION SELECT name, sql FROM sqlite_master WHERE type='table' --</div>
+                </div>
+
+                <div id="gameSearchResults" class="results" style="display: none;">
+                    <h3>📊 검색 결과</h3>
+                    <div id="gameSearchResultContent"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let gameState = {
+            currentLevel: 1,
+            totalScore: 0,
+            missionsCompleted: 0,
+            totalAttempts: 0,
+            successfulAttempts: 0
+        };
+
+        function updateGameStats() {
+            document.getElementById('currentLevel').textContent = gameState.currentLevel;
+            document.getElementById('totalScore').textContent = gameState.totalScore;
+            document.getElementById('missionsCompleted').textContent = gameState.missionsCompleted;
+            
+            const accuracy = gameState.totalAttempts > 0 ? 
+                Math.round((gameState.successfulAttempts / gameState.totalAttempts) * 100) : 0;
+            document.getElementById('accuracy').textContent = accuracy + '%';
+        }
+
+        function attemptGameLogin() {
+            const username = document.getElementById('gameUsername').value;
+            const password = document.getElementById('gamePassword').value;
+            
+            gameState.totalAttempts++;
+            
+            if (!username.trim() || !password.trim()) {
+                alert('사용자명과 비밀번호를 입력해주세요.');
+                return;
+            }
+
+            fetch('/game/login', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ username, password })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    gameState.successfulAttempts++;
+                    gameState.totalScore += 100;
+                    gameState.missionsCompleted++;
+                    
+                    const resultDiv = document.getElementById('gameResults');
+                    const contentDiv = document.getElementById('gameResultContent');
+                    
+                    contentDiv.innerHTML = `
+                        <div class="success-animation">
+                            <div style="background: #d4edda; color: #155724; padding: 15px; border-radius: 8px; margin-bottom: 15px;">
+                                <h4>🎉 미션 성공!</h4>
+                                <p>SQL Injection을 통해 관리자 계정으로 로그인했습니다!</p>
+                                <p><strong>획득 점수:</strong> 100점</p>
+                            </div>
+                        </div>
+                        <div class="sql-display">실행된 SQL: ${data.sql}</div>
+                        <div class="result-item">
+                            <strong>로그인된 사용자:</strong><br>
+                            <strong>사용자명:</strong> ${data.user.username}<br>
+                            <strong>이메일:</strong> ${data.user.email}<br>
+                            <strong>역할:</strong> ${data.user.role}
+                        </div>
+                    `;
+                    
+                    resultDiv.style.display = 'block';
+                    
+                    // 다음 미션 표시
+                    setTimeout(() => {
+                        document.getElementById('mission2').style.display = 'block';
+                        gameState.currentLevel = 2;
+                        updateGameStats();
+                    }, 2000);
+                    
+                } else {
+                    const resultDiv = document.getElementById('gameResults');
+                    const contentDiv = document.getElementById('gameResultContent');
+                    
+                    contentDiv.innerHTML = `
+                        <div style="background: #f8d7da; color: #721c24; padding: 15px; border-radius: 8px; margin-bottom: 15px;">
+                            <h4>❌ 미션 실패</h4>
+                            <p>올바른 SQL Injection 페이로드를 사용해보세요.</p>
+                        </div>
+                        <div class="sql-display">실행된 SQL: ${data.sql}</div>
+                    `;
+                    
+                    resultDiv.style.display = 'block';
+                }
+                
+                updateGameStats();
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('오류가 발생했습니다.');
+            });
+        }
+
+        function attemptGameSearch() {
+            const query = document.getElementById('gameSearch').value;
+            
+            gameState.totalAttempts++;
+            
+            if (!query.trim()) {
+                alert('검색어를 입력해주세요.');
+                return;
+            }
+
+            fetch(`/game/extract-data?q=${encodeURIComponent(query)}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.success && data.results && data.results.length > 0) {
+                    // sqlite_master 테이블 정보가 포함되어 있는지 확인
+                    const hasSchemaInfo = data.results.some(result => 
+                        result.name && result.sql && result.name !== 'users'
+                    );
+                    
+                    if (hasSchemaInfo) {
+                        gameState.successfulAttempts++;
+                        gameState.totalScore += 150;
+                        gameState.missionsCompleted++;
+                        
+                        const resultDiv = document.getElementById('gameSearchResults');
+                        const contentDiv = document.getElementById('gameSearchResultContent');
+                        
+                        contentDiv.innerHTML = `
+                            <div class="success-animation">
+                                <div style="background: #d4edda; color: #155724; padding: 15px; border-radius: 8px; margin-bottom: 15px;">
+                                    <h4>🎉 미션 성공!</h4>
+                                    <p>데이터베이스 스키마 정보를 성공적으로 수집했습니다!</p>
+                                    <p><strong>획득 점수:</strong> 150점</p>
+                                </div>
+                            </div>
+                            <div class="sql-display">실행된 SQL: ${data.sql}</div>
+                            <div class="result-item">
+                                <strong>수집된 데이터베이스 정보:</strong><br><br>
+                                ${data.results.map(result => `
+                                    <div style="margin-bottom: 10px; padding: 10px; background: white; border-radius: 5px;">
+                                        <strong>테이블명:</strong> ${result.name}<br>
+                                        <strong>스키마:</strong> ${result.sql}
+                                    </div>
+                                `).join('')}
+                            </div>
+                        `;
+                        
+                        resultDiv.style.display = 'block';
+                        
+                        // 게임 완료 메시지
+                        setTimeout(() => {
+                            alert('🎉 축하합니다! 모든 미션을 완료했습니다!\n\n총 점수: ' + gameState.totalScore + '점\n정확도: ' + Math.round((gameState.successfulAttempts / gameState.totalAttempts) * 100) + '%');
+                        }, 2000);
+                        
+                    } else {
+                        const resultDiv = document.getElementById('gameSearchResults');
+                        const contentDiv = document.getElementById('gameSearchResultContent');
+                        
+                        contentDiv.innerHTML = `
+                            <div style="background: #f8d7da; color: #721c24; padding: 15px; border-radius: 8px; margin-bottom: 15px;">
+                                <h4>❌ 미션 실패</h4>
+                                <p>데이터베이스 스키마 정보를 수집해야 합니다. 다른 페이로드를 시도해보세요.</p>
+                            </div>
+                            <div class="sql-display">실행된 SQL: ${data.sql}</div>
+                        `;
+                        
+                        resultDiv.style.display = 'block';
+                    }
+                } else {
+                    const resultDiv = document.getElementById('gameSearchResults');
+                    const contentDiv = document.getElementById('gameSearchResultContent');
+                    
+                    contentDiv.innerHTML = `
+                        <div style="background: #f8d7da; color: #721c24; padding: 15px; border-radius: 8px; margin-bottom: 15px;">
+                            <h4>❌ 미션 실패</h4>
+                            <p>올바른 SQL Injection 페이로드를 사용해보세요.</p>
+                        </div>
+                        <div class="sql-display">실행된 SQL: ${data.sql}</div>
+                    `;
+                    
+                    resultDiv.style.display = 'block';
+                }
+                
+                updateGameStats();
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('오류가 발생했습니다.');
+            });
+        }
+
+        function copyPayload(element) {
+            const text = element.textContent;
+            navigator.clipboard.writeText(text).then(() => {
+                element.style.background = '#28a745';
+                element.style.color = 'white';
+                setTimeout(() => {
+                    element.style.background = 'white';
+                    element.style.color = 'black';
+                }, 500);
+            });
+        }
+
+        // Enter 키 이벤트
+        document.getElementById('gameUsername').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                attemptGameLogin();
+            }
+        });
+
+        document.getElementById('gamePassword').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                attemptGameLogin();
+            }
+        });
+
+        document.getElementById('gameSearch').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                attemptGameSearch();
+            }
+        });
+
+        // 초기 게임 상태 업데이트
+        updateGameStats();
+    </script>
+</body>
+</html> 

@@ -143,6 +143,18 @@ db.serialize(() => {
         }
     });
 
+    // 워게임 level5용 users_level5 테이블 및 FLAG 생성 (매번 초기화)
+    db.run(`DROP TABLE IF EXISTS users_level5`);
+    db.run(`CREATE TABLE IF NOT EXISTS users_level5 (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        userid TEXT,
+        userpassword TEXT,
+        flag TEXT
+    )`);
+    db.run(`DELETE FROM users_level5`);
+    db.run(`INSERT INTO users_level5 (userid, userpassword) VALUES ('guest', 'guest')`, function() {
+        db.run(`INSERT INTO users_level5 (userid, userpassword, flag) VALUES ('admin', 'adminpassword', 'FLAG{sql Injection 까짓거 한 번 해보죠}')`);
+    });
 
     // submissions 테이블 (워게임 문제 풀이 기록)
     db.run(`CREATE TABLE IF NOT EXISTS submissions (
@@ -642,8 +654,54 @@ app.get('/api/solved', (req, res) => {
     });
 });
 
+// 카이사르 암호화 함수
+function caesarEncrypt(text, shift = 3) {
+    return text.split('').map(char => {
+        if (/[a-z]/.test(char)) {
+            return String.fromCharCode((char.charCodeAt(0) - 97 + shift) % 26 + 97);
+        } else if (/[A-Z]/.test(char)) {
+            return String.fromCharCode((char.charCodeAt(0) - 65 + shift) % 26 + 65);
+        } else {
+            return char;
+        }
+    }).join('');
+}
+
+// 워게임 level5: 문제 설명 및 폼 (GET)
+app.get('/wargame/level5', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'wargame-level5.html'));
+});
+
+// 워게임 level5: 로그인 처리 (POST, userid만 카이사르 암호)
+app.post('/wargame/level5', (req, res) => {
+    const { userid, userpassword } = req.body;
+    const encryptedUserid = caesarEncrypt(userid, 3);
+
+    const query = `SELECT * FROM users_level5 WHERE userid = '${encryptedUserid}' AND userpassword = '${userpassword}'`;
+    console.log("Level 5 Query:", query);
+
+    db.all(query, [], (err, rows) => {
+        if (err) {
+            return res.status(500).send("Server error<hr/><pre>" + query + "</pre>");
+        }
+
+        if (rows.length > 1) {
+            res.send(`hello guest<hr/><pre>${query}</pre>`);
+        } else if (rows.length === 1) {
+            const row = rows[0];
+            if (row.userid === 'admin') {
+                res.send(`hello ${row.userid}! FLAG is ${row.flag}<hr/><pre>${query}</pre>`);
+            } else {
+                res.send(`hello ${row.userid}<hr/><pre>${query}</pre>`);
+            }
+        } else {
+            res.send(`Login failed<hr/><pre>${query}</pre>`);
+        }
+    });
+});
+
 // 서버 시작
-app.listen(PORT, () => {
+app.listen(3000, () => {
     console.log(`🚀 SQL Injection Lab 서버가 포트 ${PORT}에서 실행 중입니다!`);
     console.log(`📚 학습 사이트: http://localhost:${PORT}`);
     console.log(`🎯 단계별 학습: http://localhost:${PORT}/sql-injection-levels`);

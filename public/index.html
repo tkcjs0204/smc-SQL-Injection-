@@ -160,6 +160,11 @@
                 <p>블라인드 SQL Injection을 활용하여<br>admin FLAG를 추출하는 최종 문제입니다.</p>
                 <button onclick="location.href='wargame-level4.html'">도전하기</button>
             </div>
+            <div class="wargame-card">
+                <h3>Level 5</h3>
+                <p>입력값이 카이사르 암호(+3)로 변환되어 쿼리에 삽입되는<br>특수한 SQL Injection 문제입니다.<br>admin FLAG를 노려보세요.</p>
+                <button onclick="location.href='wargame-level5.html'">도전하기</button>
+            </div>
         </div>
     </div>
     <script>
@@ -172,7 +177,7 @@
             // 워게임 클리어 표시
             fetch('/api/solved').then(r=>r.json()).then(list=>{
                 const cleared = new Set(list.map(row=>row.level));
-                [1,2,3,4].forEach(level=>{
+                [1,2,3,4,5].forEach(level=>{
                     if(cleared.has(level)) {
                         const card = document.querySelector('.wargame-card:nth-of-type('+(level+2)+')');
                         if(card && !card.querySelector('.clear-badge')) {
